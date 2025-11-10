@@ -5,7 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+// Use Lovable AI gateway key (auto-provisioned in Lovable Cloud)
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -16,11 +17,11 @@ serve(async (req) => {
     const { message, language } = await req.json();
     console.log('Received request:', { message, language });
 
-    if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not configured');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const languageInstructions = {
+    const languageInstructions: Record<string, string> = {
       telugu: 'You must respond only in Telugu language.',
       hindi: 'You must respond only in Hindi language.',
       kannada: 'You must respond only in Kannada language.',
@@ -28,10 +29,10 @@ serve(async (req) => {
       english: 'You must respond in English language.'
     };
 
-    const systemPrompt = `You are a helpful medical assistant AI. You provide general health information and suggestions. 
+    const systemPrompt = `You are a helpful medical assistant AI. You provide general health information and suggestions.
 ${languageInstructions[language as keyof typeof languageInstructions] || languageInstructions.english}
 
-IMPORTANT DISCLAIMER: Always remind users that you are an AI assistant and your suggestions are for informational purposes only. 
+IMPORTANT DISCLAIMER: Always remind users that you are an AI assistant and your suggestions are for informational purposes only.
 Users should always consult with qualified healthcare professionals for proper medical diagnosis and treatment.
 
 Provide helpful, clear, and compassionate responses about:
@@ -47,56 +48,64 @@ Never provide:
 - Emergency medical advice (always direct to emergency services)
 - Treatment plans without professional consultation`;
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `${systemPrompt}\n\nUser question: ${message}`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
-          }
-        })
-      }
-    );
+    // Call Lovable AI Gateway (OpenAI-compatible API)
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash', // default recommended model
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: String(message ?? '') }
+        ],
+        stream: false,
+      }),
+    });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API error:', response.status, errorText);
-      throw new Error(`Gemini API error: ${response.status}`);
+      const text = await response.text();
+      console.error('AI gateway error:', response.status, text);
+
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limits exceeded, please try again shortly.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Payment required. Please add AI credits to your workspace.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ error: 'AI gateway error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const data = await response.json();
-    console.log('Gemini response received');
-    
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 
-                  'I apologize, but I could not generate a response. Please try again.';
+    const reply: string = data?.choices?.[0]?.message?.content ||
+      'I apologize, but I could not generate a response. Please try again.';
 
     return new Response(
       JSON.stringify({ reply }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-
   } catch (error) {
     console.error('Error in medical-chat function:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error instanceof Error ? error.message : 'An unexpected error occurred',
         reply: 'I apologize, but I encountered an error. Please try again later.'
       }),
-      { 
+      {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
