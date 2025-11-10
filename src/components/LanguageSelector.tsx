@@ -13,6 +13,10 @@ const languages = [
   { code: 'hindi', name: 'Hindi', native: 'हिंदी' },
   { code: 'kannada', name: 'Kannada', native: 'ಕನ್ನಡ' },
   { code: 'tamil', name: 'Tamil', native: 'தமிழ்' },
+  { code: 'marathi', name: 'Marathi', native: 'मराठी' },
+  { code: 'urdu', name: 'Urdu', native: 'اردو' },
+  { code: 'malayalam', name: 'Malayalam', native: 'മലയാളം' },
+  { code: 'bengali', name: 'Bengali', native: 'বাংলা' },
 ];
 
 export const LanguageSelector = ({ selectedLanguage, onLanguageChange }: LanguageSelectorProps) => {

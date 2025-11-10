@@ -26,6 +26,10 @@ serve(async (req) => {
       hindi: 'You must respond only in Hindi language.',
       kannada: 'You must respond only in Kannada language.',
       tamil: 'You must respond only in Tamil language.',
+      marathi: 'You must respond only in Marathi language.',
+      urdu: 'You must respond only in Urdu language.',
+      malayalam: 'You must respond only in Malayalam language.',
+      bengali: 'You must respond only in Bengali language.',
       english: 'You must respond in English language.'
     };
 
