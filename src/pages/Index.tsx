@@ -5,7 +5,7 @@ import { ChatInterface, ChatInterfaceRef } from "@/components/ChatInterface";
 import { SymptomsChecker } from "@/components/SymptomsChecker";
 import { ChatHistory } from "@/components/ChatHistory";
 import { Button } from "@/components/ui/button";
-import { Activity, LogOut, Phone } from "lucide-react";
+import { Activity, LogOut, Phone, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
@@ -82,10 +82,14 @@ const Index = () => {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Check your symptoms and get health information in your preferred language
           </p>
-          <div className="mt-4 flex items-center justify-center gap-3">
+          <div className="mt-4 flex items-center justify-center gap-3 flex-wrap">
             <Button onClick={handleEmergency} variant="destructive" size="sm" className="gap-2">
               <Phone className="w-4 h-4" />
               Safety+ Emergency
+            </Button>
+            <Button onClick={() => navigate("/emergency-contacts")} variant="default" size="sm" className="gap-2">
+              <Users className="w-4 h-4" />
+              Emergency Contacts
             </Button>
             <Button onClick={handleSignOut} variant="outline" size="sm">
               <LogOut className="w-4 h-4 mr-2" />
@@ -121,7 +125,7 @@ const Index = () => {
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-base mb-2 text-foreground">Team Members</h3>
+            <h3 className="font-semibold text-base mb-2 text-foreground">Contributors</h3>
             <div className="flex flex-wrap justify-center gap-3 max-w-2xl mx-auto">
               <span>Rushi (23BDS030)</span>
               <span>•</span>

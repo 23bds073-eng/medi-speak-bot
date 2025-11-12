@@ -9,14 +9,14 @@ interface LanguageSelectorProps {
 
 const languages = [
   { code: 'english', name: 'English', native: 'English' },
-  { code: 'telugu', name: 'Telugu', native: 'తెలుగు' },
-  { code: 'hindi', name: 'Hindi', native: 'हिंदी' },
-  { code: 'kannada', name: 'Kannada', native: 'ಕನ್ನಡ' },
-  { code: 'tamil', name: 'Tamil', native: 'தமிழ்' },
-  { code: 'marathi', name: 'Marathi', native: 'मराठी' },
-  { code: 'urdu', name: 'Urdu', native: 'اردو' },
-  { code: 'malayalam', name: 'Malayalam', native: 'മലയാളം' },
-  { code: 'bengali', name: 'Bengali', native: 'বাংলা' },
+  { code: 'telugu-english', name: 'Telugu + English', native: 'తెలుగు + English' },
+  { code: 'hindi-english', name: 'Hindi + English', native: 'हिंदी + English' },
+  { code: 'kannada-english', name: 'Kannada + English', native: 'ಕನ್ನಡ + English' },
+  { code: 'tamil-english', name: 'Tamil + English', native: 'தமிழ் + English' },
+  { code: 'marathi-english', name: 'Marathi + English', native: 'मराठी + English' },
+  { code: 'urdu-english', name: 'Urdu + English', native: 'اردو + English' },
+  { code: 'malayalam-english', name: 'Malayalam + English', native: 'മലയാളം + English' },
+  { code: 'bengali-english', name: 'Bengali + English', native: 'বাংলা + English' },
 ];
 
 export const LanguageSelector = ({ selectedLanguage, onLanguageChange }: LanguageSelectorProps) => {
@@ -26,7 +26,7 @@ export const LanguageSelector = ({ selectedLanguage, onLanguageChange }: Languag
         <Globe className="w-5 h-5 text-primary" />
         <h3 className="text-lg font-semibold text-foreground">Select Language</h3>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {languages.map((lang) => (
           <Button
             key={lang.code}

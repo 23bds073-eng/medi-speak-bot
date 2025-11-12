@@ -14,27 +14,49 @@ serve(async (req) => {
   }
 
   try {
-    const { message, language } = await req.json();
+    const { message, language = 'english' } = await req.json();
     console.log('Received request:', { message, language });
 
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const languageInstructions: Record<string, string> = {
-      telugu: 'You must respond only in Telugu language.',
-      hindi: 'You must respond only in Hindi language.',
-      kannada: 'You must respond only in Kannada language.',
-      tamil: 'You must respond only in Tamil language.',
-      marathi: 'You must respond only in Marathi language.',
-      urdu: 'You must respond only in Urdu language.',
-      malayalam: 'You must respond only in Malayalam language.',
-      bengali: 'You must respond only in Bengali language.',
-      english: 'You must respond in English language.'
-    };
+    // Parse dual-language format (e.g., "telugu-english")
+    const isDualLanguage = language.includes('-');
+    let languageInstruction = '';
+    
+    if (isDualLanguage) {
+      const [primaryLang, secondaryLang] = language.split('-');
+      languageInstruction = `CRITICAL: You MUST provide ALL responses in DUAL-LANGUAGE format:
+1. First, write the complete response in ${primaryLang.charAt(0).toUpperCase() + primaryLang.slice(1)} language
+2. Add "---" as a separator line
+3. Then write the SAME complete response in simple ${secondaryLang.charAt(0).toUpperCase() + secondaryLang.slice(1)}
+
+Example format:
+[Complete response in ${primaryLang}]
+---
+[Same complete response in simple ${secondaryLang}]
+
+Both responses must cover the same information.`;
+    } else {
+      const languageNames: Record<string, string> = {
+        telugu: 'Telugu',
+        hindi: 'Hindi',
+        kannada: 'Kannada',
+        tamil: 'Tamil',
+        marathi: 'Marathi',
+        urdu: 'Urdu',
+        malayalam: 'Malayalam',
+        bengali: 'Bengali',
+        english: 'English'
+      };
+      const langName = languageNames[language as keyof typeof languageNames] || 'English';
+      languageInstruction = `You must respond only in ${langName} language.`;
+    }
 
     const systemPrompt = `You are a helpful medical assistant AI. You provide general health information and suggestions.
-${languageInstructions[language as keyof typeof languageInstructions] || languageInstructions.english}
+
+${languageInstruction}
 
 IMPORTANT DISCLAIMER: Always remind users that you are an AI assistant and your suggestions are for informational purposes only.
 Users should always consult with qualified healthcare professionals for proper medical diagnosis and treatment.
